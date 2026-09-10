@@ -43,6 +43,32 @@ score      = w_lexical * lexical + w_semantic * semantic + boosts
 
 Now a weight of 1.0 and 0.8 means what it says.
 
+## The shape of it
+
+Both retrievers run against the same query and propose candidates independently. Nothing merges
+until each has scored on its own terms, because normalising before you know a retriever's own
+maximum is what makes one scale dominate the other.
+
+```mermaid
+flowchart TD
+    Q["Query"] --> A{"Needs interpreting?"}
+    A -- "no" --> P["Search plan"]
+    A -- "yes" --> S["SLM: query intent"]
+    S --> P
+    P --> L["Lexical: ts_rank_cd"]
+    P --> V["Semantic: cosine distance"]
+    P --> M["Metadata filters"]
+    L --> N["Normalise per retriever"]
+    V --> N
+    M --> N
+    N --> R["Weighted rank"]
+    R --> O["Results, with per-signal explanation"]
+```
+
+The dashed path matters more than it looks: a query the analyzer judges simple never reaches the
+model at all, and one the model fails to interpret in time falls back to the same deterministic
+parse. Retrieval does not depend on the model being available.
+
 ## Keep ranking deterministic
 
 Given the same query, corpus and weights, the order must not change between requests. That means:
