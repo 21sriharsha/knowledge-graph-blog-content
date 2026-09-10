@@ -69,6 +69,8 @@ The dashed path matters more than it looks: a query the analyzer judges simple n
 model at all, and one the model fails to interpret in time falls back to the same deterministic
 parse. Retrieval does not depend on the model being available.
 
+![The two retrievers combining into one ranked list](images/retrieval.png)
+
 ## Keep ranking deterministic
 
 Given the same query, corpus and weights, the order must not change between requests. That means:
